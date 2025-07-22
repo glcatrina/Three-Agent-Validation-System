@@ -144,3 +144,12 @@ MIT License - feel free to use, modify, and distribute!
 **Built with ❤️ for the AI community**
 
 ⭐ **Star this repo if you find it useful!**
+
+
+---
+
+## Acknowledgments
+
+This project was developed with assistance from Claude.ai by Anthropic.
+
+---
