@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three-Agent Validation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #28a745;
+        }
+
+        .task-input {
+            margin-bottom: 30px;
+        }
+
+        .task-input label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .task-input textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .task-input textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .quick-tasks {
+            margin-bottom: 30px;
+        }
+
+        .quick-tasks h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .quick-task-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .quick-task-btn {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .quick-task-btn:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .start-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            display: none;
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .agent-status {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .agent-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .agent-card.active {
+            border-color: #ffc107;
+            background: #fff8e1;
+        }
+
+        .agent-card.completed {
+            border-color: #28a745;
+            background: #f1f8e9;
+        }
+
+        .round-info {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .final-work {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .agent-status {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Three-Agent Validation System</h1>
+            <p>AI agents that collaborate to create and validate high-quality work</p>
+        </div>
+
+        <div class="main-content">
+            <div class="status-bar" id="statusBar">
+                <span id="connectionStatus">🔌 Checking Ollama connection...</span>
+            </div>
+
+            <div class="task-input">
+                <label for="taskTextarea">📝 Enter your task:</label>
+                <textarea id="taskTextarea" placeholder="Describe what you want the agents to work on..."></textarea>
+            </div>
+
+            <div class="quick-tasks">
+                <h3>🚀 Quick Start Templates:</h3>
+                <div class="quick-task-buttons">
+                    <div class="quick-task-btn" onclick="setTask('Write a Python function to calculate compound interest with documentation and examples')">
+                        💻 Python Function
+                    </div>
+                    <div class="quick-task-btn" onclick="setTask('Create a 3-paragraph explanation of why exercise is important for mental health')">
+                        📝 Health Article
+                    </div>
+                    <div class="quick-task-btn" onclick="setTask('Design a simple daily routine for someone working from home')">
+                        🏠 Daily Routine
+                    </div>
+                    <div class="quick-task-btn" onclick="setTask('Write a professional email declining a job offer politely')">
+                        ✉️ Professional Email
+                    </div>
+                </div>
+            </div>
+
+            <button class="start-btn" id="startBtn" onclick="startValidation()">
+                🚀 Start Three-Agent Validation
+            </button>
+
+            <div class="progress-section" id="progressSection">
+                <div class="progress-header">
+                    <h3>🔄 Validation in Progress</h3>
+                    <span id="currentStatus">Starting...</span>
+                </div>
+
+                <div class="agent-status">
+                    <div class="agent-card" id="agent1">
+                        <h4>🔨 Agent 1: Worker</h4>
+                        <p>Creates the work</p>
+                        <div id="agent1Status">Waiting...</div>
+                    </div>
+                    <div class="agent-card" id="agent2">
+                        <h4>🔍 Agent 2: Critic</h4>
+                        <p>Reviews and provides feedback</p>
+                        <div id="agent2Status">Waiting...</div>
+                    </div>
+                    <div class="agent-card" id="agent3">
+                        <h4>⚖️ Agent 3: Validator</h4>
+                        <p>Makes final decisions</p>
+                        <div id="agent3Status">Waiting...</div>
+                    </div>
+                </div>
+
+                <div id="roundsInfo"></div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <h3 id="resultsTitle">📊 Results</h3>
+                <div id="resultsContent"></div>
+                <div class="final-work" id="finalWork"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let statusCheckInterval = null;
+
+        // Check Ollama connection on page load
+        window.onload = function() {
+            checkConnection();
+        };
+
+        async function checkConnection() {
+            try {
+                const response = await fetch('/test_connection');
+                const data = await response.json();
+                
+                const statusBar = document.getElementById('statusBar');
+                const statusSpan = document.getElementById('connectionStatus');
+                
+                if (data.connected) {
+                    statusSpan.innerHTML = '✅ Ollama connected and ready!';
+                    statusBar.style.borderLeftColor = '#28a745';
+                } else {
+                    statusSpan.innerHTML = '❌ Ollama connection failed: ' + data.error;
+                    statusBar.style.borderLeftColor = '#dc3545';
+                }
+            } catch (error) {
+                const statusSpan = document.getElementById('connectionStatus');
+                statusSpan.innerHTML = '❌ Cannot reach server';
+                document.getElementById('statusBar').style.borderLeftColor = '#dc3545';
+            }
+        }
+
+        function setTask(task) {
+            document.getElementById('taskTextarea').value = task;
+        }
+
+        async function startValidation() {
+            const task = document.getElementById('taskTextarea').value.trim();
+            
+            if (!task) {
+                alert('Please enter a task first!');
+                return;
+            }
+
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span class="spinner"></span> Starting validation...';
+
+            try {
+                const response = await fetch('/start_task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ task: task })
+                });
+
+                const data = await response.json();
+                
+                if (data.session_id) {
+                    currentSessionId = data.session_id;
+                    showProgress();
+                    startStatusChecking();
+                } else {
+                    alert('Failed to start validation: ' + (data.error || 'Unknown error'));
+                    resetButton();
+                }
+            } catch (error) {
+                alert('Failed to start validation: ' + error);
+                resetButton();
+            }
+        }
+
+        function showProgress() {
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        function startStatusChecking() {
+            statusCheckInterval = setInterval(checkStatus, 2000); // Check every 2 seconds
+        }
+
+        async function checkStatus() {
+            if (!currentSessionId) return;
+
+            try {
+                const response = await fetch(`/get_status/${currentSessionId}`);
+                const data = await response.json();
+
+                updateProgress(data);
+
+                if (data.status === 'completed' || data.status === 'error') {
+                    clearInterval(statusCheckInterval);
+                    showResults(data);
+                    resetButton();
+                }
+            } catch (error) {
+                console.error('Status check failed:', error);
+            }
+        }
+
+        function updateProgress(data) {
+            const currentStatus = document.getElementById('currentStatus');
+            const roundsInfo = document.getElementById('roundsInfo');
+
+            currentStatus.textContent = data.status;
+
+            // Update agent status based on current activity
+            resetAgentCards();
+            
+            if (data.status.includes('Agent 1')) {
+                document.getElementById('agent1').classList.add('active');
+            } else if (data.status.includes('Agent 2')) {
+                document.getElementById('agent2').classList.add('active');
+                document.getElementById('agent1').classList.add('completed');
+            } else if (data.status.includes('Agent 3')) {
+                document.getElementById('agent3').classList.add('active');
+                document.getElementById('agent1').classList.add('completed');
+                document.getElementById('agent2').classList.add('completed');
+            }
+
+            // Show rounds information
+            if (data.rounds && data.rounds.length > 0) {
+                roundsInfo.innerHTML = '<h4>📋 Completed Rounds:</h4>';
+                data.rounds.forEach((round, index) => {
+                    const roundDiv = document.createElement('div');
+                    roundDiv.className = 'round-info';
+                    roundDiv.innerHTML = `
+                        <strong>Round ${round.round}</strong><br>
+                        <small>Work: ${round.worker_output.substring(0, 100)}...</small><br>
+                        <small>Decision: ${round.validator_decision.substring(0, 100)}...</small>
+                    `;
+                    roundsInfo.appendChild(roundDiv);
+                });
+            }
+        }
+
+        function resetAgentCards() {
+            ['agent1', 'agent2', 'agent3'].forEach(id => {
+                const card = document.getElementById(id);
+                card.classList.remove('active', 'completed');
+            });
+        }
+
+        function showResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsTitle = document.getElementById('resultsTitle');
+            const resultsContent = document.getElementById('resultsContent');
+            const finalWork = document.getElementById('finalWork');
+
+            resultsSection.style.display = 'block';
+
+            if (data.status === 'error') {
+                resultsTitle.innerHTML = '❌ Error Occurred';
+                resultsContent.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                finalWork.textContent = '';
+            } else if (data.final_result) {
+                if (data.final_result.approved) {
+                    resultsTitle.innerHTML = '🎉 Task Approved!';
+                    resultsContent.innerHTML = `
+                        <p class="success">✅ Work approved after ${data.final_result.rounds_used} round(s)</p>
+                        <p>The three agents successfully collaborated to create high-quality work.</p>
+                    `;
+                } else {
+                    resultsTitle.innerHTML = '⏰ Maximum Rounds Reached';
+                    resultsContent.innerHTML = `
+                        <p class="warning">⚠️ Used all ${data.final_result.rounds_used} rounds without approval</p>
+                        <p>The work below represents the best effort, but may need further refinement.</p>
+                    `;
+                }
+                finalWork.textContent = data.final_result.final_work;
+            }
+        }
+
+        function resetButton() {
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = false;
+            startBtn.innerHTML = '🚀 Start Three-Agent Validation';
+        }
+    </script>
+</body>
+</html>
