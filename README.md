@@ -139,10 +139,6 @@ MIT License - feel free to use, modify, and distribute!
 - [Flask](https://flask.palletsprojects.com/) for the web framework
 - The open-source AI community for inspiration and feedback
 
----
-
-## Acknowledgments
-
 This project was developed with assistance from Claude.ai by Anthropic.
 
 ---
